@@ -45,10 +45,10 @@ This archive does **not** contain a fabricated `package-lock.json`. The build en
 After uploading the repository:
 
 1. Open **Actions → Bootstrap dependency lockfile**.
-2. Run it once from `main`.
+2. Run it once from `latest`.
 3. The workflow uses pinned Node/npm versions and resolves the lockfile with dependency lifecycle scripts disabled.
-4. It commits only `package-lock.json` back to the repository.
-5. Normal CI/deployment can then run.
+4. It commits only `package-lock.json` back to `latest`.
+5. Normal CI can then run; production deployment remains reserved for `stable`.
 
 See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the Cloudflare and GitHub environment setup.
 
@@ -80,7 +80,7 @@ npm run verify
 
 ## CI/CD behavior
 
-Pull requests receive build and security checks only. A merge or push to `main` performs the same no-secret build, uploads the resulting static artifacts, and then starts a separate deployment job using credentials from the protected GitHub `production` Environment.
+Pushes and pull requests for `latest` and `stable` receive the same build and security gates. `latest` is the development/default branch; only a successful non-PR run of `stable` can start the separate deployment job using credentials from the protected GitHub `production` Environment.
 
 The deployment job does **not** rebuild the application or install the project's dependency tree. Deployment is disabled by default until the GitHub Actions repository variable `ENABLE_PRODUCTION_DEPLOY=true` is explicitly created.
 

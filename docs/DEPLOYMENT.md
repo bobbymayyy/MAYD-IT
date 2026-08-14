@@ -1,18 +1,32 @@
 # GitHub → Cloudflare deployment
 
-## 1. Create the GitHub repository
+MAY'D IT uses two long-lived branches:
 
-Upload this repository with `main` as the default branch.
+- `latest` is the default development branch. CI, dependency updates, and normal work land here first.
+- `stable` is the production promotion branch. A successful `stable` build is the only branch eligible to deploy to Cloudflare.
+
+## 1. Repository branch model
+
+Keep `latest` as the GitHub default branch and retain `stable` as a protected production branch. Do not develop directly on `stable`; promote tested changes from `latest` into it.
 
 ## 2. Bootstrap the lockfile once
 
-Before enabling strict branch protection, open GitHub **Actions → Bootstrap dependency lockfile → Run workflow**. It will generate and commit `package-lock.json` without executing dependency lifecycle scripts.
+Before enabling strict protection on `latest`, open GitHub **Actions → Bootstrap dependency lockfile**, select the `latest` branch, and run the workflow.
 
-The next `CI and deploy` run should then be able to build.
+The workflow is deliberately restricted to `latest`. It resolves and commits `package-lock.json` without executing dependency lifecycle scripts, then pushes only that lockfile commit back to `latest`.
 
-## 3. Test CI before enabling deployment
+The next `CI and deploy` run should then be able to install the exact dependency graph and build both static applications.
 
-After the bootstrap commit, the normal CI workflow will install, audit, build, verify, and upload artifacts. Production deployment is disabled by default because the repository variable `ENABLE_PRODUCTION_DEPLOY` does not exist yet. This lets you validate CI without touching Cloudflare.
+## 3. CI behavior
+
+`CI and deploy` runs on:
+
+- pushes to `latest`;
+- pushes to `stable`;
+- pull requests targeting `latest` or `stable`;
+- manual workflow dispatches.
+
+Every run performs the same no-secret build, signature/provenance checks, vulnerability gate, static-output verification, SBOM generation, and artifact creation. Pull requests and `latest` pushes can never deploy production.
 
 ## 4. Create the GitHub production environment
 
@@ -23,22 +37,42 @@ Add these environment secrets:
 - `CLOUDFLARE_ACCOUNT_ID`
 - `CLOUDFLARE_API_TOKEN`
 
-Use a narrowly scoped Cloudflare API token that can deploy Workers for the intended account. Do not use the Global API Key.
+Use a narrowly scoped Cloudflare API token that can deploy only the intended Workers resources/account. Do not use the Global API Key.
 
-Optionally require manual approval for the `production` environment while the deployment is new.
+For the initial rollout, requiring manual approval for the `production` environment is a useful additional guardrail.
 
-## 5. Enable and run the first deployment
+If GitHub exposes deployment-branch restrictions for the environment, permit only `stable`.
 
-In **Settings → Secrets and variables → Actions → Variables**, create `ENABLE_PRODUCTION_DEPLOY` with value `true`.
+## 5. Enable production deployment
 
-Then push or merge to `main`, or run `CI and deploy` manually from `main`. The workflow builds without production credentials and then deploys two Workers Static Assets services:
+In **Settings → Secrets and variables → Actions → Variables**, create:
+
+```text
+ENABLE_PRODUCTION_DEPLOY=true
+```
+
+This switch is intentionally absent by default. Without it, even a successful `stable` build cannot deploy.
+
+## 6. Promote to production
+
+The normal promotion path is:
+
+```text
+feature/work → latest → CI passes → promote/merge → stable → CI passes → deploy
+```
+
+Only a non-PR run whose ref is exactly `refs/heads/stable` and whose repository variable `ENABLE_PRODUCTION_DEPLOY` is `true` can enter the deploy job.
+
+The deploy job downloads the already-built artifacts from the no-secret build job. It does not reinstall the project dependency tree.
+
+The two Cloudflare Workers Static Assets services are:
 
 - `mayd-it-site`
 - `mayd-it-arcade`
 
-Initially test them on their `workers.dev` hostnames. This avoids disturbing the current WordPress site.
+Initially verify them on their `workers.dev` hostnames. This leaves the current WordPress site untouched.
 
-## 6. Domain cutover
+## 7. Domain cutover
 
 After the Workers deployments are verified, attach custom domains in Cloudflare:
 
@@ -47,14 +81,23 @@ After the Workers deployments are verified, attach custom domains in Cloudflare:
 
 Do this only when ready to replace the current origin for `mayyy.us`.
 
-## 7. Protect main
+## 8. Recommended GitHub rulesets
 
-After the initial lockfile commit succeeds, configure a GitHub ruleset for `main`:
+### `latest`
 
-- require pull requests for changes;
+- require CI before merge where practical;
+- block force pushes and deletion;
+- require conversation resolution;
+- keep this branch as the default branch;
+- dependency-update PRs target this branch.
+
+### `stable`
+
+- require pull requests or intentional promotion from `latest`;
 - require the `Build and security gates` check;
 - block force pushes and deletion;
 - require conversation resolution;
-- require Actions to be pinned to full-length commit SHAs if your GitHub plan/settings expose that policy.
+- restrict the GitHub `production` environment to this branch;
+- require Actions to be pinned to full-length commit SHAs if your GitHub settings expose that policy.
 
-For a solo repository, avoid a required reviewer count that would prevent you from merging your own maintenance PRs.
+For a solo repository, avoid a required reviewer count that prevents you from promoting your own releases.

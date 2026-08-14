@@ -2,8 +2,10 @@
 
 ## 0.1.1 - 2026-08-13
 
+
 ### Changed
 
+- Adopted `latest` / `stable` branch promotion: CI on both, production deployment from `stable` only.
 - Renamed the project from MAYYY 2.0 to **MAY'D IT**.
 - Pinned the development toolchain to Node.js 24.19.0 and npm 11.17.0.
 - Pinned Astro to 7.1.3.
