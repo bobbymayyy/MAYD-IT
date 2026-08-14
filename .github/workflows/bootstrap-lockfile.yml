@@ -24,6 +24,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           check-latest: false
+          package-manager-cache: false
 
       - name: Refuse to replace an existing lockfile
         shell: bash
