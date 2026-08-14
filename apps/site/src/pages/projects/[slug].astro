@@ -17,31 +17,44 @@ const { project } = Astro.props;
     <h1>{project.name}</h1>
     <p class="case-study__lede">{project.description}</p>
 
+    {project.highlights && (
+      <div class="case-study__highlights" aria-label="Project highlights">
+        {project.highlights.map((highlight) => <span>{highlight}</span>)}
+      </div>
+    )}
+
     <div class="case-study__grid">
       <section>
         <h2>Problem</h2>
-        <p>This page is wired and ready for the project-specific problem statement.</p>
+        <p>{project.problem}</p>
       </section>
       <section>
         <h2>Constraints</h2>
         <ul>
-          <li>Minimize dependencies and operational overhead.</li>
-          <li>Prefer explicit failure over silent complexity.</li>
-          <li>Document boundaries without exposing operational secrets.</li>
+          {project.constraints.map((constraint) => <li>{constraint}</li>)}
         </ul>
       </section>
       <section>
         <h2>Architecture</h2>
-        <p>Architecture diagrams and sanitized topology land here in v0.2.0.</p>
+        <ol class="architecture-list">
+          {project.architecture.map((item, index) => (
+            <li><span>{String(index + 1).padStart(2, '0')}</span><p>{item}</p></li>
+          ))}
+        </ol>
       </section>
       <section>
         <h2>Failures / lessons</h2>
-        <p>The useful mistakes belong in the portfolio too. This section will capture the decisions that changed after contact with reality.</p>
+        <ul>
+          {project.lessons.map((lesson) => <li>{lesson}</li>)}
+        </ul>
       </section>
     </div>
 
-    <div class="tag-row">
-      {project.tags.map((tag) => <span>{tag}</span>)}
+    <div class="case-study__footer">
+      <div class="tag-row">
+        {project.tags.map((tag) => <span>{tag}</span>)}
+      </div>
+      {project.repo && <a class="button" href={project.repo} rel="noreferrer">VIEW REPOSITORY →</a>}
     </div>
   </article>
   <CommandInterface slot="after-body" />
