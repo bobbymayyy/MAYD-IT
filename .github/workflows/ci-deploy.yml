@@ -118,7 +118,7 @@ jobs:
   deploy:
     name: Deploy static artifacts
     needs: build
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/stable' && vars.ENABLE_PRODUCTION_DEPLOY == 'true'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/stable'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     environment: production
