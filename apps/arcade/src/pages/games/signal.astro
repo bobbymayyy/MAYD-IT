@@ -1,0 +1,56 @@
+---
+import ArcadeLayout from '../../layouts/ArcadeLayout.astro';
+---
+<ArcadeLayout title="SIGNAL · MAY'D IT ARCADE">
+  <section class="arcade-shell game-page signal-game">
+    <a class="back" href="/">← SELECT GAME</a>
+    <div class="game-heading">
+      <div><p class="prompt">PROGRAM 04</p><h1>SIGNAL</h1></div>
+      <div class="scoreboard">STABILITY <span id="signal-stability">100</span>%</div>
+    </div>
+
+    <div class="signal-console" id="signal-console" aria-label="Strategic defense simulation">
+      <div class="signal-statusbar">
+        <span>ALERT <b id="signal-alert">GREEN</b></span>
+        <span>TIME <b id="signal-time">090</b></span>
+        <span>SCORE <b id="signal-score">0000</b></span>
+      </div>
+
+      <div class="signal-grid" id="signal-grid">
+        <button class="signal-sector" data-sector="0" type="button">
+          <span>NORTH ARRAY</span><b>00%</b><i></i>
+        </button>
+        <button class="signal-sector" data-sector="1" type="button">
+          <span>EAST ARRAY</span><b>00%</b><i></i>
+        </button>
+        <button class="signal-sector" data-sector="2" type="button">
+          <span>SOUTH ARRAY</span><b>00%</b><i></i>
+        </button>
+        <button class="signal-sector" data-sector="3" type="button">
+          <span>WEST ARRAY</span><b>00%</b><i></i>
+        </button>
+      </div>
+
+      <div class="signal-controls">
+        <div>
+          <p class="prompt">SELECTED ARRAY</p>
+          <strong id="signal-selected">NORTH ARRAY</strong>
+        </div>
+        <div class="signal-actions">
+          <button type="button" data-action="scan">SCAN</button>
+          <button type="button" data-action="intercept">INTERCEPT</button>
+          <button type="button" data-action="harden">HARDEN</button>
+        </div>
+      </div>
+
+      <div class="signal-log" id="signal-log" aria-live="polite">
+        <p>&gt; STRATEGIC NETWORK ONLINE.</p>
+        <p>&gt; KEEP ALL FOUR ARRAYS BELOW CRITICAL LOAD FOR 90 SECONDS.</p>
+      </div>
+    </div>
+
+    <p class="subtle">CLICK AN ARRAY · SCAN REVEALS ACTIVITY · INTERCEPT REDUCES LOAD · HARDEN SLOWS GROWTH</p>
+    <button class="terminal-button" id="signal-restart" type="button">RESTART SIMULATION</button>
+  </section>
+  <script src="../../scripts/signal.ts"></script>
+</ArcadeLayout>
