@@ -1,0 +1,164 @@
+name: CI and deploy
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mayd-it-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ASTRO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  build:
+    name: Build and security gates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up pinned Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .nvmrc
+          check-latest: false
+
+      - name: Verify toolchain
+        run: node scripts/check-toolchain.mjs
+
+      - name: Require committed dependency lock
+        shell: bash
+        run: |
+          if [[ ! -f package-lock.json ]]; then
+            echo "::error::package-lock.json is required. Run the 'Bootstrap dependency lockfile' workflow once before CI/deployment."
+            exit 1
+          fi
+
+      - name: Install locked dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Verify npm registry signatures and provenance
+        run: npm audit signatures
+
+      - name: Reject known high or critical vulnerabilities
+        run: npm audit --audit-level=high
+
+      - name: Build and verify static outputs
+        run: npm run verify
+
+      - name: Generate SBOM
+        run: npm run security:sbom
+
+      - name: Generate build checksums
+        shell: bash
+        run: |
+          {
+            find apps/site/dist -type f -print0
+            find apps/arcade/dist -type f -print0
+          } | sort -z | xargs -0 sha256sum > artifacts/build-sha256.txt
+
+      - name: Record build metadata
+        shell: bash
+        run: |
+          {
+            echo "commit=${GITHUB_SHA}"
+            echo "node=$(node --version)"
+            echo "npm=$(npm --version)"
+            echo "built_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > artifacts/build-metadata.txt
+
+      - name: Upload site deployment artifact
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        with:
+          name: mayd-it-site-${{ github.sha }}
+          path: |
+            apps/site/dist
+            apps/site/wrangler.jsonc
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 9
+
+      - name: Upload arcade deployment artifact
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        with:
+          name: mayd-it-arcade-${{ github.sha }}
+          path: |
+            apps/arcade/dist
+            apps/arcade/wrangler.jsonc
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 9
+
+      - name: Upload security evidence
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        with:
+          name: mayd-it-security-evidence-${{ github.sha }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 9
+
+  deploy:
+    name: Deploy static artifacts
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.ENABLE_PRODUCTION_DEPLOY == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: production
+    permissions:
+      contents: read
+
+    steps:
+      - name: Download site artifact
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
+        with:
+          name: mayd-it-site-${{ github.sha }}
+          path: deploy/site
+
+      - name: Download arcade artifact
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
+        with:
+          name: mayd-it-arcade-${{ github.sha }}
+          path: deploy/arcade
+
+      - name: Sanity-check deployment payloads
+        shell: bash
+        run: |
+          test -f deploy/site/dist/index.html
+          test -f deploy/site/wrangler.jsonc
+          test -f deploy/arcade/dist/index.html
+          test -f deploy/arcade/wrangler.jsonc
+          if find deploy -type l -print -quit | grep -q .; then
+            echo "::error::Symlinks are not permitted in deployment artifacts."
+            exit 1
+          fi
+
+      - name: Deploy MAY'D IT site
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.113.0"
+          workingDirectory: deploy/site
+          command: deploy
+
+      - name: Deploy MAY'D IT arcade
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.113.0"
+          workingDirectory: deploy/arcade
+          command: deploy
