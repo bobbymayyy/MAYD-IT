@@ -34,6 +34,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           check-latest: false
+          package-manager-cache: false
 
       - name: Verify toolchain
         run: node scripts/check-toolchain.mjs
