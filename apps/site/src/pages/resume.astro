@@ -4,17 +4,20 @@ import CommandInterface from '../components/CommandInterface.astro';
 import { resume } from '../data/resume';
 ---
 
-<BaseLayout title="Resume · MAY'D IT">
+<BaseLayout title="Resume · MAY'D IT" description={resume.summary}>
   <section class="page-intro shell resume-intro">
     <span class="eyebrow">RESUME</span>
     <h1>{resume.name}</h1>
     <p>{resume.headline}</p>
     <p class="page-intro__lede">{resume.summary}</p>
     <div class="hero__actions">
-      <a class="button button--primary" href="/resume.pdf">Download PDF</a>
+      {resume.publicPdf ? (
+        <a class="button button--primary" href={resume.publicPdfPath}>Download PDF</a>
+      ) : (
+        <span class="button button--disabled" aria-disabled="true">PUBLIC PDF IN PREP</span>
+      )}
       <a class="button" href="https://github.com/bobbymayyy">GitHub</a>
     </div>
-    <p class="notice">Add the sanitized public resume as <code>apps/site/public/resume.pdf</code> before production launch.</p>
   </section>
 
   <section class="section shell split-panel">
@@ -32,6 +35,15 @@ import { resume } from '../data/resume';
         ))}
       </ol>
     </div>
+  </section>
+
+  <section class="section shell resume-dropzone">
+    <span class="eyebrow">PUBLIC VERSION</span>
+    <h2>Built for a sanitized, portable resume.</h2>
+    <p>
+      The page is already wired for a public PDF. Add <code>apps/site/public/resume.pdf</code> and set
+      <code>publicPdf</code> to <code>true</code> in <code>src/data/resume.ts</code> when the public copy is ready.
+    </p>
   </section>
   <CommandInterface slot="after-body" />
 </BaseLayout>

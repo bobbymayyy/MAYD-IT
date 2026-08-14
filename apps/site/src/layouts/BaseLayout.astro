@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import '../styles/enhancements.css';
 
 interface Props {
   title?: string;
@@ -10,6 +11,21 @@ const {
   title = "MAY'D IT · Systems, Security, Infrastructure, AI",
   description = 'Engineering portfolio focused on systems architecture, security, infrastructure, automation, and software.',
 } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, 'https://mayyy.us');
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: "MAY'D IT",
+  url: 'https://mayyy.us',
+  description,
+  author: {
+    '@type': 'Person',
+    name: 'Nathan May',
+    url: 'https://mayyy.us/about',
+    sameAs: ['https://github.com/bobbymayyy'],
+  },
+};
 ---
 
 <!doctype html>
@@ -19,6 +35,17 @@ const {
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={description} />
     <meta name="theme-color" content="#0a0c0b" />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MAY'D IT" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     <title>{title}</title>
   </head>
   <body>
@@ -37,7 +64,7 @@ const {
       <slot />
     </main>
     <footer class="site-footer">
-      <span>MAY'D IT</span>
+      <span>MAY'D IT · v0.2.0</span>
       <span>Static-first · no public admin surface</span>
     </footer>
     <slot name="after-body" />
