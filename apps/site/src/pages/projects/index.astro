@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CommandInterface from '../../components/CommandInterface.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { projects } from '../../data/projects';
+---
+
+<BaseLayout title="Projects · MAY'D IT">
+  <section class="page-intro shell">
+    <span class="eyebrow">ENGINEERING NOTEBOOK</span>
+    <h1>Projects</h1>
+    <p>Systems explained through problems, constraints, decisions, failures, and iterations instead of screenshots alone.</p>
+  </section>
+  <section class="section shell">
+    <div class="project-grid">
+      {projects.map((project) => <ProjectCard project={project} />)}
+    </div>
+  </section>
+  <CommandInterface slot="after-body" />
+</BaseLayout>

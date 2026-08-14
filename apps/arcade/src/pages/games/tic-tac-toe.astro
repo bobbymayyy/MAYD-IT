@@ -1,0 +1,16 @@
+---
+import ArcadeLayout from '../../layouts/ArcadeLayout.astro';
+---
+<ArcadeLayout title="Tic-Tac-Toe · MAY'D IT ARCADE">
+  <section class="arcade-shell game-page narrow-game">
+    <a class="back" href="/">← SELECT GAME</a>
+    <p class="prompt">PROGRAM 03</p>
+    <h1>TIC-TAC-TOE</h1>
+    <p class="subtle" id="ttt-status">YOU ARE X. THE MACHINE IS O.</p>
+    <div class="ttt" id="ttt" role="grid" aria-label="Tic-Tac-Toe board">
+      {Array.from({ length: 9 }).map((_, i) => <button type="button" role="gridcell" data-cell={i} aria-label={`Cell ${i + 1}`}></button>)}
+    </div>
+    <button class="terminal-button" id="ttt-reset" type="button">NEW SIMULATION</button>
+  </section>
+  <script src="../../scripts/tic-tac-toe.ts"></script>
+</ArcadeLayout>

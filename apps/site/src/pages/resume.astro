@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CommandInterface from '../components/CommandInterface.astro';
+import { resume } from '../data/resume';
+---
+
+<BaseLayout title="Resume · MAY'D IT">
+  <section class="page-intro shell resume-intro">
+    <span class="eyebrow">RESUME</span>
+    <h1>{resume.name}</h1>
+    <p>{resume.headline}</p>
+    <p class="page-intro__lede">{resume.summary}</p>
+    <div class="hero__actions">
+      <a class="button button--primary" href="/resume.pdf">Download PDF</a>
+      <a class="button" href="https://github.com/bobbymayyy">GitHub</a>
+    </div>
+    <p class="notice">Add the sanitized public resume as <code>apps/site/public/resume.pdf</code> before production launch.</p>
+  </section>
+
+  <section class="section shell split-panel">
+    <div>
+      <span class="eyebrow">FOCUS</span>
+      <ul class="large-list">
+        {resume.focus.map((item) => <li>{item}</li>)}
+      </ul>
+    </div>
+    <div>
+      <span class="eyebrow">PRINCIPLES</span>
+      <ol class="principles">
+        {resume.principles.map((principle, index) => (
+          <li><span>{String(index + 1).padStart(2, '0')}</span>{principle}</li>
+        ))}
+      </ol>
+    </div>
+  </section>
+  <CommandInterface slot="after-body" />
+</BaseLayout>

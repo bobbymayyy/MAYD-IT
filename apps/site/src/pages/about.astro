@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CommandInterface from '../components/CommandInterface.astro';
+---
+
+<BaseLayout title="About · MAY'D IT">
+  <section class="page-intro shell prose-page">
+    <span class="eyebrow">ABOUT</span>
+    <h1>Build the system. Understand the system.</h1>
+    <p>I work across systems architecture, infrastructure, security, automation, and software, with a bias toward designs that are understandable under pressure.</p>
+    <p>MAY'D IT follows the same rule: static where possible, dynamic only where justified, and experimental surfaces isolated from trusted ones.</p>
+  </section>
+  <CommandInterface slot="after-body" />
+</BaseLayout>

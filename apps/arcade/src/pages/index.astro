@@ -1,0 +1,22 @@
+---
+import ArcadeLayout from '../layouts/ArcadeLayout.astro';
+const games = [
+  { href: '/games/snake', id: '01', name: 'SNAKE', note: 'ARROWS / WASD' },
+  { href: '/games/pong', id: '02', name: 'PONG', note: 'W/S + ↑/↓' },
+  { href: '/games/tic-tac-toe', id: '03', name: 'TIC-TAC-TOE', note: 'HUMAN VS CPU' },
+];
+---
+<ArcadeLayout>
+  <section class="arcade-shell arcade-hero">
+    <p class="prompt">GREETINGS, OPERATOR.</p>
+    <h1>SELECT A SIMULATION.</h1>
+    <p class="subtle">Client-side only. No account. No backend. No persistence worth stealing.</p>
+    <div class="game-list">
+      {games.map((game) => (
+        <a class="game-row" href={game.href}>
+          <span>{game.id}</span><strong>{game.name}</strong><small>{game.note}</small><b>RUN →</b>
+        </a>
+      ))}
+    </div>
+  </section>
+</ArcadeLayout>

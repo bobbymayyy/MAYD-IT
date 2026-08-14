@@ -1,0 +1,14 @@
+const cells = [...document.querySelectorAll('[data-cell]')];
+const status = document.querySelector('#ttt-status');
+const resetButton = document.querySelector('#ttt-reset');
+const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+let board = Array(9).fill(''), over = false;
+const winner=(state,mark)=>wins.some((line)=>line.every((i)=>state[i]===mark));
+const free=(state)=>state.map((v,i)=>v?null:i).filter((v)=>v!==null);
+const minimax=(state,maximizing)=>{if(winner(state,'O'))return 10;if(winner(state,'X'))return-10;const open=free(state);if(!open.length)return 0;if(maximizing){let best=-Infinity;for(const i of open){state[i]='O';best=Math.max(best,minimax(state,false));state[i]='';}return best;}let best=Infinity;for(const i of open){state[i]='X';best=Math.min(best,minimax(state,true));state[i]='';}return best;};
+const render=()=>cells.forEach((cell,i)=>{if(cell instanceof HTMLButtonElement){cell.textContent=board[i];cell.disabled=over||Boolean(board[i]);}});
+const resolve=()=>{if(winner(board,'X')){over=true;if(status)status.textContent='HUMAN VICTORY. RESULT ARCHIVED.';return;}if(winner(board,'O')){over=true;if(status)status.textContent='MACHINE VICTORY. RUN ANOTHER SIMULATION.';return;}if(!free(board).length){over=true;if(status)status.textContent='STALEMATE. NO ADVANTAGE FOUND.';}};
+const cpuMove=()=>{if(over)return;let bestScore=-Infinity,move=null;for(const i of free(board)){board[i]='O';const score=minimax(board,false);board[i]='';if(score>bestScore){bestScore=score;move=i;}}if(move!==null)board[move]='O';render();resolve();};
+const reset=()=>{board=Array(9).fill('');over=false;if(status)status.textContent='YOU ARE X. THE MACHINE IS O.';render();};
+cells.forEach((cell,i)=>cell.addEventListener('click',()=>{if(over||board[i])return;board[i]='X';render();resolve();if(!over)window.setTimeout(cpuMove,180);}));
+resetButton?.addEventListener('click',reset);reset();

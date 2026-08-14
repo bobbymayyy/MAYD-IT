@@ -1,0 +1,20 @@
+---
+import '../styles/arcade.css';
+const { title = "MAY'D IT ARCADE" } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="theme-color" content="#020702" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="arcade-header">
+      <a href="/">MAY'D IT // ARCADE</a>
+      <nav><a href="https://mayyy.us">EXIT TO MAYYY.US</a></nav>
+    </header>
+    <main><slot /></main>
+  </body>
+</html>

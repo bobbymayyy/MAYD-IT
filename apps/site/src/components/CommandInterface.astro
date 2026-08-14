@@ -1,0 +1,120 @@
+---
+const arcadeBase = import.meta.env.PUBLIC_ARCADE_URL || 'https://play.mayyy.us';
+---
+
+<dialog class="command-dialog" data-command-dialog data-arcade-base={arcadeBase}>
+  <div class="terminal" role="application" aria-label="MAY'D IT command interface">
+    <div class="terminal__header">
+      <span>maydit://command</span>
+      <button type="button" data-command-close aria-label="Close command interface">ESC</button>
+    </div>
+    <div class="terminal__history" data-command-history aria-live="polite">
+      <p><span class="muted">MAY'D IT command interface v0.1.1</span></p>
+      <p>Type <code>help</code> for commands. Try <code>play</code>.</p>
+    </div>
+    <form class="terminal__form" data-command-form autocomplete="off">
+      <label for="command-input">maydit@web:~$</label>
+      <input id="command-input" data-command-input name="command" spellcheck="false" autocomplete="off" />
+    </form>
+  </div>
+</dialog>
+
+<script>
+  const dialog = document.querySelector('[data-command-dialog]');
+  const input = document.querySelector('[data-command-input]');
+  const history = document.querySelector('[data-command-history]');
+  const form = document.querySelector('[data-command-form]');
+  const trigger = document.querySelector('[data-command-trigger]');
+  const close = document.querySelector('[data-command-close]');
+
+  if (
+    dialog instanceof HTMLDialogElement &&
+    input instanceof HTMLInputElement &&
+    history instanceof HTMLElement &&
+    form instanceof HTMLFormElement
+  ) {
+    const arcadeBase = dialog.dataset.arcadeBase || 'https://play.mayyy.us';
+
+    const print = (content, className = '') => {
+      const line = document.createElement('p');
+      if (className) line.className = className;
+      line.textContent = content;
+      history.append(line);
+      history.scrollTop = history.scrollHeight;
+    };
+
+    const navigate = (url) => {
+      window.location.href = url;
+    };
+
+    const commands = {
+      help: () => [
+        'projects        selected engineering work',
+        'resume          professional background',
+        "about           about MAY'D IT",
+        'github          open GitHub',
+        'play            open arcade',
+        'play snake      launch Snake',
+        'play pong       launch Pong',
+        'play ttt        launch Tic-Tac-Toe',
+        'whoami          identity summary',
+        'status          architecture status',
+        'clear           clear terminal',
+      ],
+      projects: () => navigate('/projects'),
+      resume: () => navigate('/resume'),
+      about: () => navigate('/about'),
+      github: () => navigate('https://github.com/bobbymayyy'),
+      play: () => navigate(arcadeBase),
+      'play snake': () => navigate(`${arcadeBase}/games/snake`),
+      'play pong': () => navigate(`${arcadeBase}/games/pong`),
+      'play ttt': () => navigate(`${arcadeBase}/games/tic-tac-toe`),
+      whoami: () => [
+        'Nathan May',
+        'systems · security · infrastructure · automation · software',
+      ],
+      status: () => [
+        'portfolio: static',
+        'database: none',
+        'public admin: none',
+        `arcade: isolated @ ${arcadeBase}`,
+      ],
+      clear: () => {
+        history.replaceChildren();
+      },
+    };
+
+    const openDialog = () => {
+      if (!dialog.open) dialog.showModal();
+      input.focus();
+    };
+
+    trigger?.addEventListener('click', openDialog);
+    close?.addEventListener('click', () => dialog.close());
+
+    document.addEventListener('keydown', (event) => {
+      if ((event.key === '`' || event.key === '/') && !dialog.open) {
+        const target = event.target;
+        if (!(target instanceof HTMLInputElement) && !(target instanceof HTMLTextAreaElement)) {
+          event.preventDefault();
+          openDialog();
+        }
+      }
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const command = input.value.trim().toLowerCase().replace(/\s+/g, ' ');
+      if (!command) return;
+      print(`maydit@web:~$ ${command}`, 'command-echo');
+      input.value = '';
+      const handler = commands[command];
+      if (!handler) {
+        print(`command not found: ${command}. Try "help".`, 'terminal-error');
+        return;
+      }
+      const output = handler();
+      if (Array.isArray(output)) output.forEach((line) => print(line));
+    });
+  }
+</script>

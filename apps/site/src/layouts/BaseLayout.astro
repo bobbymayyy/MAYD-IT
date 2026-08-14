@@ -1,0 +1,45 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "MAY'D IT · Systems, Security, Infrastructure, AI",
+  description = 'Engineering portfolio focused on systems architecture, security, infrastructure, automation, and software.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0a0c0b" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="MAY'D IT home">MAY'D IT<span class="brand-dot">.</span></a>
+      <nav aria-label="Primary navigation">
+        <a href="/projects">Projects</a>
+        <a href="/resume">Resume</a>
+        <a href="/about">About</a>
+        <a href="https://github.com/bobbymayyy" rel="me">GitHub</a>
+        <button class="command-trigger" type="button" data-command-trigger aria-label="Open command interface">⌘ COMMAND</button>
+      </nav>
+    </header>
+    <main id="content">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <span>MAY'D IT</span>
+      <span>Static-first · no public admin surface</span>
+    </footer>
+    <slot name="after-body" />
+  </body>
+</html>

@@ -1,0 +1,62 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CommandInterface from '../components/CommandInterface.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { projects } from '../data/projects';
+import { resume } from '../data/resume';
+---
+
+<BaseLayout>
+  <section class="hero shell">
+    <div class="eyebrow">SYSTEMS / SECURITY / INFRASTRUCTURE / AI / SOFTWARE</div>
+    <h1>I build complicated things, then remove everything they don’t need.</h1>
+    <p class="hero__lede">
+      Architecture, infrastructure, security, automation, and software built around explicit constraints and observable failure.
+    </p>
+    <div class="hero__actions">
+      <a class="button button--primary" href="/projects">Explore my work</a>
+      <a class="button" href="/resume">Resume</a>
+    </div>
+    <div class="hero__hint">Press <kbd>/</kbd> or <kbd>`</kbd> for the command interface.</div>
+  </section>
+
+  <section class="section shell">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">CURRENTLY BUILDING</span>
+        <h2>Selected systems</h2>
+      </div>
+      <a href="/projects">All projects →</a>
+    </div>
+    <div class="project-grid">
+      {projects.slice(0, 3).map((project) => <ProjectCard project={project} />)}
+    </div>
+  </section>
+
+  <section class="section shell split-panel">
+    <div>
+      <span class="eyebrow">EXPERIENCE</span>
+      <h2>{resume.summary}</h2>
+      <a class="text-link" href="/resume">View experience →</a>
+    </div>
+    <div>
+      <span class="eyebrow">ENGINEERING PRINCIPLES</span>
+      <ol class="principles">
+        {resume.principles.map((principle, index) => (
+          <li><span>{String(index + 1).padStart(2, '0')}</span>{principle}</li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section shell arcade-callout">
+    <div>
+      <span class="eyebrow">UNNECESSARY, THEREFORE ESSENTIAL</span>
+      <h2>There is also an arcade.</h2>
+      <p>Small HTML5 games live on an isolated origin. No accounts. No backend. No trusted route home.</p>
+    </div>
+    <a class="button" href="https://play.mayyy.us">ENTER ARCADE →</a>
+  </section>
+
+  <CommandInterface slot="after-body" />
+</BaseLayout>

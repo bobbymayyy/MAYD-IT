@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CommandInterface from '../../components/CommandInterface.astro';
+import { projects } from '../../data/projects';
+
+export function getStaticPaths() {
+  return projects.map((project) => ({ params: { slug: project.slug }, props: { project } }));
+}
+
+const { project } = Astro.props;
+---
+
+<BaseLayout title={`${project.name} · MAY'D IT`} description={project.description}>
+  <article class="case-study shell">
+    <a class="back-link" href="/projects">← Projects</a>
+    <span class="eyebrow">{project.kicker}</span>
+    <h1>{project.name}</h1>
+    <p class="case-study__lede">{project.description}</p>
+
+    <div class="case-study__grid">
+      <section>
+        <h2>Problem</h2>
+        <p>This page is wired and ready for the project-specific problem statement.</p>
+      </section>
+      <section>
+        <h2>Constraints</h2>
+        <ul>
+          <li>Minimize dependencies and operational overhead.</li>
+          <li>Prefer explicit failure over silent complexity.</li>
+          <li>Document boundaries without exposing operational secrets.</li>
+        </ul>
+      </section>
+      <section>
+        <h2>Architecture</h2>
+        <p>Architecture diagrams and sanitized topology land here in v0.2.0.</p>
+      </section>
+      <section>
+        <h2>Failures / lessons</h2>
+        <p>The useful mistakes belong in the portfolio too. This section will capture the decisions that changed after contact with reality.</p>
+      </section>
+    </div>
+
+    <div class="tag-row">
+      {project.tags.map((tag) => <span>{tag}</span>)}
+    </div>
+  </article>
+  <CommandInterface slot="after-body" />
+</BaseLayout>

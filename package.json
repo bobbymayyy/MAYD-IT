@@ -1,0 +1,27 @@
+{
+  "name": "mayd-it",
+  "version": "0.1.1",
+  "private": true,
+  "packageManager": "npm@11.17.0",
+  "workspaces": [
+    "apps/site",
+    "apps/arcade"
+  ],
+  "scripts": {
+    "dev:site": "npm --workspace @mayd-it/site run dev",
+    "dev:arcade": "npm --workspace @mayd-it/arcade run dev",
+    "build": "npm run build:site && npm run build:arcade",
+    "build:site": "npm --workspace @mayd-it/site run build",
+    "build:arcade": "npm --workspace @mayd-it/arcade run build",
+    "preview:site": "npm --workspace @mayd-it/site run preview",
+    "preview:arcade": "npm --workspace @mayd-it/arcade run preview",
+    "security:audit": "npm audit --audit-level=high",
+    "security:signatures": "npm audit signatures",
+    "security:sbom": "mkdir -p artifacts && npm sbom --sbom-format=cyclonedx > artifacts/sbom.cdx.json",
+    "verify": "npm run build && node scripts/verify-build.mjs"
+  },
+  "engines": {
+    "node": "24.19.0",
+    "npm": "11.17.0"
+  }
+}
