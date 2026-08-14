@@ -3,6 +3,8 @@ export const resume = {
   headline: 'Systems Architecture · Cybersecurity · Infrastructure · Automation',
   summary:
     'Systems-focused engineer with 10+ years across infrastructure, cyber operations, architecture, resilience, automation, research, and technical leadership.',
+  publicPdf: false,
+  publicPdfPath: '/resume.pdf',
   focus: [
     'Systems architecture',
     'Cyber operations and security engineering',
