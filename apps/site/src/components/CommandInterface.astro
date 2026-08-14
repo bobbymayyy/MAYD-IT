@@ -6,11 +6,12 @@ const arcadeBase = import.meta.env.PUBLIC_ARCADE_URL || 'https://play.mayyy.us';
   <div class="terminal" role="application" aria-label="MAY'D IT command interface">
     <div class="terminal__header">
       <span>maydit://command</span>
+      <span class="terminal__keys">↑↓ history · TAB complete · ESC close</span>
       <button type="button" data-command-close aria-label="Close command interface">ESC</button>
     </div>
     <div class="terminal__history" data-command-history aria-live="polite">
-      <p><span class="muted">MAY'D IT command interface v0.1.1</span></p>
-      <p>Type <code>help</code> for commands. Try <code>play</code>.</p>
+      <p><span class="muted">MAY'D IT command interface v0.2.0</span></p>
+      <p>Type <code>help</code> for commands. Try <code>play signal</code>.</p>
     </div>
     <form class="terminal__form" data-command-form autocomplete="off">
       <label for="command-input">maydit@web:~$</label>
@@ -34,6 +35,8 @@ const arcadeBase = import.meta.env.PUBLIC_ARCADE_URL || 'https://play.mayyy.us';
     form instanceof HTMLFormElement
   ) {
     const arcadeBase = dialog.dataset.arcadeBase || 'https://play.mayyy.us';
+    const commandHistory = [];
+    let historyIndex = 0;
 
     const print = (content, className = '') => {
       const line = document.createElement('p');
@@ -57,6 +60,7 @@ const arcadeBase = import.meta.env.PUBLIC_ARCADE_URL || 'https://play.mayyy.us';
         'play snake      launch Snake',
         'play pong       launch Pong',
         'play ttt        launch Tic-Tac-Toe',
+        'play signal     launch SIGNAL',
         'whoami          identity summary',
         'status          architecture status',
         'clear           clear terminal',
@@ -69,6 +73,7 @@ const arcadeBase = import.meta.env.PUBLIC_ARCADE_URL || 'https://play.mayyy.us';
       'play snake': () => navigate(`${arcadeBase}/games/snake`),
       'play pong': () => navigate(`${arcadeBase}/games/pong`),
       'play ttt': () => navigate(`${arcadeBase}/games/tic-tac-toe`),
+      'play signal': () => navigate(`${arcadeBase}/games/signal`),
       whoami: () => [
         'Nathan May',
         'systems · security · infrastructure · automation · software',
@@ -78,15 +83,37 @@ const arcadeBase = import.meta.env.PUBLIC_ARCADE_URL || 'https://play.mayyy.us';
         'database: none',
         'public admin: none',
         `arcade: isolated @ ${arcadeBase}`,
+        'release: 0.2.0',
       ],
       clear: () => {
         history.replaceChildren();
       },
     };
 
+    const commandNames = Object.keys(commands);
+
     const openDialog = () => {
       if (!dialog.open) dialog.showModal();
       input.focus();
+    };
+
+    const completeCommand = () => {
+      const value = input.value.trim().toLowerCase();
+      if (!value) return;
+      const matches = commandNames.filter((command) => command.startsWith(value));
+      if (matches.length === 1) {
+        input.value = matches[0];
+        input.setSelectionRange(input.value.length, input.value.length);
+      } else if (matches.length > 1) {
+        print(matches.join('  '), 'muted');
+      }
+    };
+
+    const moveHistory = (direction) => {
+      if (!commandHistory.length) return;
+      historyIndex = Math.max(0, Math.min(commandHistory.length, historyIndex + direction));
+      input.value = historyIndex === commandHistory.length ? '' : commandHistory[historyIndex];
+      input.setSelectionRange(input.value.length, input.value.length);
     };
 
     trigger?.addEventListener('click', openDialog);
@@ -102,15 +129,30 @@ const arcadeBase = import.meta.env.PUBLIC_ARCADE_URL || 'https://play.mayyy.us';
       }
     });
 
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        completeCommand();
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        moveHistory(-1);
+      } else if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        moveHistory(1);
+      }
+    });
+
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const command = input.value.trim().toLowerCase().replace(/\s+/g, ' ');
       if (!command) return;
       print(`maydit@web:~$ ${command}`, 'command-echo');
+      commandHistory.push(command);
+      historyIndex = commandHistory.length;
       input.value = '';
       const handler = commands[command];
       if (!handler) {
-        print(`command not found: ${command}. Try "help".`, 'terminal-error');
+        print(`command not found: ${command}. Try "help" or press TAB.`, 'terminal-error');
         return;
       }
       const output = handler();
