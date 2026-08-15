@@ -1,11 +1,28 @@
-# MAY'D IT 0.2.0
+# MAY'D IT 0.2.1
 
-A static-first engineering portfolio built around systems architecture, security, infrastructure, automation, and software, with an isolated browser arcade and a deliberately tiny production attack surface.
+A static-first engineering portfolio for systems architecture, security, infrastructure, automation, and software, with an isolated browser arcade and a deliberately tiny production attack surface.
 
 Production:
 
 - https://mayyy.us
 - https://play.mayyy.us
+
+## What MAY'D IT is
+
+MAY'D IT is both a portfolio and an example of the engineering philosophy it describes.
+
+The public surface is intentionally simple:
+
+- static Astro builds;
+- no public application server;
+- no database;
+- no CMS;
+- no public administration panel;
+- no account system;
+- no homelab dependency for availability;
+- no trusted backend relationship between the portfolio and arcade.
+
+Interactive features are added only where they earn their existence. The main site includes a command interface and rotating project showcase, while the arcade lives on a separate origin and remains entirely browser-side.
 
 ## Architecture
 
@@ -38,12 +55,11 @@ Production:
                 Cloudflare Workers
                    Static Assets
                     │         │
-                    │         │
                     ▼         ▼
                mayyy.us   play.mayyy.us
 ```
 
-The production stack has no application VM, container host, SSH service, database, CMS, cron-based deployment process, or public administration panel.
+Production has no application VM, container host, SSH service, database, cron-based deployment process, or public administration surface.
 
 ## Repository layout
 
@@ -60,65 +76,51 @@ MAYD-IT/
 └── package-lock.json
 ```
 
-## MAY'D IT 0.2.0
+## 0.2.1
 
-0.2.0 expands the original portfolio into a richer engineering showcase while preserving the same static-first architecture.
+0.2.1 brings the documented release surface in line with the current implementation while continuing the static-first architecture established by earlier releases.
 
-### Portfolio
+Highlights:
 
-The main site includes:
+- expanded data-driven project registry and case studies;
+- rotating selected-project presentation on the homepage;
+- command-interface history and TAB completion;
+- `play fragment` terminal routing;
+- five isolated browser arcade programs;
+- touchscreen and mobile arcade support;
+- rotation-safe arcade layouts;
+- FRAGMENT, a procedural first-person experiment with intentionally ephemeral world state;
+- continued supply-chain and deployment hardening without introducing a public backend.
 
-- responsive landing page;
-- selected engineering work;
-- data-driven project case studies;
-- project architecture, constraints, lessons, and engineering highlights;
-- résumé integration;
-- command interface;
-- command history using `↑` / `↓`;
-- TAB command completion;
-- arcade routing through `play.mayyy.us`;
-- canonical URLs;
-- Open Graph metadata;
-- robots metadata;
-- JSON-LD structured metadata;
-- restrictive browser security headers.
+## Engineering projects
 
-Current project case studies include:
+The project registry currently includes:
 
-- **APPLIER**  
-  Stateful appliance compiler for building minimal, purpose-specific systems from UBI-family bases.
+- **APPLIER** - state-aware appliance compiler for UBI-family bases.
+- **CERBERUS 2.0** - lean Debian Kubernetes architecture with topology-driven control-plane growth.
+- **STOKER** - declarative offline infrastructure appliance and Debian ISO compiler.
+- **SENTINEL** - lightweight Linux incident-response and threat-hunting sensor.
+- **DIP** - deployable incident-response infrastructure platform.
+- **GARGOYLE** - hardened cross-platform host telemetry agent.
+- **OFFLINEREPO** - portable multi-distribution package repository mirror for disconnected environments.
+- **MAY'D IT** - this static-first portfolio and isolated arcade architecture.
+- **AL3X** - Linux-native Rust DAW framework.
+- **PLEXXX** - deliberately minimal VPN-isolated media acquisition stack.
 
-- **CERBERUS**  
-  Minimal Kubernetes architecture designed to start small and promote nodes into control-plane roles as topology grows.
-
-- **AL3X**  
-  Linux-native DAW framework built around Rust, PipeWire, Wayland, Vulkan, and explicit real-time diagnostics.
-
-- **PLEXXX**  
-  Minimal media acquisition architecture emphasizing VPN isolation, operational visibility, and deliberate manual control.
-
-- **IGg**  
-  Privacy-oriented local analysis tooling for exported social-network data.
-
-Project pages intentionally describe architecture and engineering decisions without publishing credentials, private topology, tokens, personal datasets, or other operational secrets.
+Project pages are data-driven and focus on the problem, constraints, architecture, engineering choices, lessons, and relevant source repositories without publishing credentials, private topology, tokens, personal datasets, or other operational secrets.
 
 ## Command interface
 
-Press:
+Press either key from the portfolio:
 
 ```text
 /
-```
-
-or:
-
-```text
 `
 ```
 
-to open the command interface.
+to open the terminal-style command interface.
 
-Example commands:
+Current commands include:
 
 ```text
 help
@@ -128,15 +130,19 @@ about
 github
 status
 whoami
+clear
 
 play
 play snake
 play pong
 play ttt
 play signal
+play fragment
 ```
 
-Command history is available with the arrow keys and supported commands can be completed with `TAB`.
+Command history uses `↑` and `↓`. Supported commands can be completed with `TAB`.
+
+The interface performs browser navigation only. It is not a shell and exposes no server-side execution surface.
 
 ## Arcade
 
@@ -146,8 +152,6 @@ The arcade is deployed independently at:
 https://play.mayyy.us
 ```
 
-It remains a separate browser-only surface with no trusted backend relationship to the portfolio.
-
 Programs:
 
 ```text
@@ -155,15 +159,28 @@ Programs:
 02  PONG
 03  TIC-TAC-TOE
 04  SIGNAL
+05  FRAGMENT
 ```
+
+All arcade programs are client-side and disposable by design.
+
+### SNAKE
+
+Classic grid-based Snake with keyboard and touchscreen directional controls.
+
+### PONG
+
+Two-player Pong with keyboard controls plus touch dragging on each side of the playfield.
+
+### TIC-TAC-TOE
+
+Human-versus-CPU Tic-Tac-Toe with a fixed, rotation-safe board layout and direct touch support.
 
 ### SIGNAL
 
-`SIGNAL` is a small strategic-defense simulation inspired by old command-console and global-alert interfaces.
+A small strategic-defense simulation inspired by command-console and global-alert interfaces.
 
-The operator manages four network arrays while system load increases over time.
-
-Available actions:
+The operator manages four network arrays while system load increases over time using:
 
 ```text
 SCAN
@@ -171,24 +188,52 @@ INTERCEPT
 HARDEN
 ```
 
-The goal is to keep the network stable for the duration of the simulation.
+The objective is to keep the network stable for the duration of the simulation.
 
-Like the rest of the arcade, SIGNAL is entirely client-side:
+### FRAGMENT
 
-- no account;
-- no API;
-- no database;
-- no server-side game state;
-- no persistent player profile;
-- no third-party scripts.
+FRAGMENT is a dependency-free procedural first-person arcade experiment built with a tiny CPU raycaster rather than an imported game engine.
+
+Its central rule is intentionally strange: the environment is not retained as a conventional level. Geometry resolves procedurally in the active travel direction. When the operator turns back toward discarded space, the former environment does not remain behind them. It collapses into animated ASCII fragments instead.
+
+FRAGMENT includes:
+
+- procedural raycast geometry;
+- no stored map or level array;
+- player collision and wall sliding;
+- deterministic procedural ERR anomalies;
+- wall-aware anomaly occlusion;
+- session-only defeated-anomaly bookkeeping;
+- keyboard, mouse, and touchscreen input;
+- no textures, models, sprite assets, game-engine dependency, save system, or backend state.
+
+Controls:
+
+```text
+Keyboard
+  W / S          forward / backward
+  A / D          strafe
+  Q / E          turn
+  Arrow keys     move / turn
+  Space          fire
+
+Mouse
+  click          capture pointer / fire
+  move           look
+
+Touch
+  left drag      move
+  right drag     look
+  right tap      fire
+```
+
+Reloading the page discards the run.
 
 ## Résumé integration
 
-The résumé page is designed to support both structured site content and a downloadable public PDF.
+The résumé page supports structured site content and an optional downloadable public PDF.
 
-The PDF is intentionally gated so an unfinished or unsanitized résumé is not accidentally exposed.
-
-When the public version is ready, place it at:
+The PDF is deliberately readiness-gated so an unfinished or unsanitized résumé is not accidentally exposed. When a public copy is ready, place it at:
 
 ```text
 apps/site/public/resume.pdf
@@ -229,7 +274,7 @@ npm audit --audit-level=high
 npm run verify
 ```
 
-## CI/CD model
+## Branch and release model
 
 MAY'D IT uses two long-lived branches:
 
@@ -238,40 +283,44 @@ latest   development / integration
 stable   production
 ```
 
-Feature work should normally enter through a dedicated branch and pull request:
+Normal promotion flow:
 
 ```text
-feature/*
-    ↓
- latest
-    ↓
- PR
-    ↓
- stable
-    ↓
+feature branch
+      │
+      ▼
+    latest
+      │
+      ▼
+      PR
+      │
+      ▼
+    stable
+      │
+      ▼
  production
 ```
 
-Pull requests and pushes into `latest` and `stable` receive the same build and security gates.
+Pull requests and pushes into `latest` and `stable` receive build and security gates.
 
 Only a non-pull-request execution on `stable` can enter the protected production deployment job.
 
-The build job:
+## CI/CD model
+
+The build pipeline:
 
 1. checks out the repository without persisting GitHub credentials;
-2. verifies the pinned Node/npm toolchain;
+2. verifies the pinned Node.js and npm toolchain;
 3. requires the committed dependency lock;
 4. installs dependencies with lifecycle scripts disabled;
 5. validates npm registry signatures and provenance;
 6. rejects known high or critical vulnerabilities;
-7. builds and verifies both applications;
-8. generates an SBOM;
+7. builds and verifies the site and arcade;
+8. generates a CycloneDX SBOM;
 9. generates SHA-256 build manifests;
 10. uploads immutable deployment artifacts.
 
-The deployment job executes separately.
-
-It downloads the already-built artifacts and deploys them to Cloudflare. The project dependency tree is not rebuilt inside the credential-bearing deployment job.
+Deployment runs separately from the build job. It consumes the already-built artifacts and deploys them to Cloudflare, so project dependencies do not execute inside the credential-bearing deployment stage.
 
 ## Cloudflare deployment
 
@@ -285,13 +334,9 @@ mayd-it-arcade
 └── https://play.mayyy.us
 ```
 
-`www.mayyy.us` redirects to the canonical apex domain:
+`www.mayyy.us` redirects to the canonical apex domain.
 
-```text
-https://mayyy.us
-```
-
-The portfolio and arcade are intentionally separate origins.
+The portfolio and arcade intentionally remain separate origins.
 
 ## Supply-chain posture
 
@@ -341,10 +386,6 @@ for the underlying policy and rationale.
 
 ## Design philosophy
 
-MAY'D IT is intentionally small.
-
-The portfolio itself is also an example of the engineering philosophy it describes:
-
 > Build the capability that is required, expose how it works, then remove everything that does not need to exist.
 
-The result is a portfolio with very little machinery behind it, fast navigation, independent failure domains, explicit deployment controls, and a pleasantly unnecessary arcade.
+MAY'D IT keeps that principle visible in its own implementation: static delivery, independent failure domains, explicit deployment boundaries, a small dependency surface, and a pleasantly unnecessary arcade.
