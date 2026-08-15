@@ -28,8 +28,12 @@ import { resume } from '../data/resume';
       </div>
       <a href="/projects">All projects →</a>
     </div>
-    <div class="project-grid">
-      {projects.slice(0, 3).map((project) => <ProjectCard project={project} />)}
+    <div class="project-grid featured-projects" data-featured-projects>
+      {projects.map((project, index) => (
+        <div class="featured-project" data-featured-project data-featured-index={index}>
+          <ProjectCard project={project} />
+        </div>
+      ))}
     </div>
   </section>
 
@@ -60,3 +64,56 @@ import { resume } from '../data/resume';
 
   <CommandInterface slot="after-body" />
 </BaseLayout>
+
+<script>
+  const featured = document.querySelector('[data-featured-projects]');
+
+  if (featured instanceof HTMLElement) {
+    const cards = Array.from(featured.querySelectorAll('[data-featured-project]')).filter(
+      (card) => card instanceof HTMLElement,
+    );
+    const pageSize = 3;
+    let start = 0;
+    let intervalId: number | undefined;
+
+    const render = () => {
+      cards.forEach((card, index) => {
+        if (!(card instanceof HTMLElement)) return;
+        const relativeIndex = (index - start + cards.length) % cards.length;
+        card.hidden = relativeIndex >= pageSize;
+      });
+    };
+
+    const advance = () => {
+      start = (start + pageSize) % cards.length;
+      render();
+    };
+
+    const startRotation = () => {
+      if (cards.length <= pageSize || intervalId) return;
+      intervalId = window.setInterval(advance, 18000);
+    };
+
+    const stopRotation = () => {
+      if (!intervalId) return;
+      window.clearInterval(intervalId);
+      intervalId = undefined;
+    };
+
+    if (cards.length > pageSize) {
+      featured.classList.add('featured-projects--enhanced');
+      render();
+
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        startRotation();
+        featured.addEventListener('mouseenter', stopRotation);
+        featured.addEventListener('mouseleave', startRotation);
+        featured.addEventListener('focusin', stopRotation);
+        featured.addEventListener('focusout', (event) => {
+          const next = event.relatedTarget;
+          if (!(next instanceof Node) || !featured.contains(next)) startRotation();
+        });
+      }
+    }
+  }
+</script>
