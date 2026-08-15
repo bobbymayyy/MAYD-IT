@@ -11,11 +11,7 @@ import { resume } from '../data/resume';
     <p>{resume.headline}</p>
     <p class="page-intro__lede">{resume.summary}</p>
     <div class="hero__actions">
-      {resume.publicPdf ? (
-        <a class="button button--primary" href={resume.publicPdfPath}>Download PDF</a>
-      ) : (
-        <span class="button button--disabled" aria-disabled="true">PUBLIC PDF IN PREP</span>
-      )}
+      {resume.publicPdf && <a class="button button--primary" href={resume.publicPdfPath}>Download PDF</a>}
       <a class="button" href="https://github.com/bobbymayyy">GitHub</a>
     </div>
   </section>
@@ -35,15 +31,6 @@ import { resume } from '../data/resume';
         ))}
       </ol>
     </div>
-  </section>
-
-  <section class="section shell resume-dropzone">
-    <span class="eyebrow">PUBLIC VERSION</span>
-    <h2>Built for a sanitized, portable resume.</h2>
-    <p>
-      The page is already wired for a public PDF. Add <code>apps/site/public/resume.pdf</code> and set
-      <code>publicPdf</code> to <code>true</code> in <code>src/data/resume.ts</code> when the public copy is ready.
-    </p>
   </section>
   <CommandInterface slot="after-body" />
 </BaseLayout>

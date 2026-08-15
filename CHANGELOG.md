@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Added data-driven case studies and source links for CERBERUS 2.0, STOKER, SENTINEL, DIP, GARGOYLE, OFFLINEREPO, and MAY'D IT.
+- Added a progressive homepage project rotation that cycles selected systems in groups of three while preserving a static no-JavaScript fallback.
+
+### Changed
+
+- Removed IGg from the public project registry.
+- Removed visitor-facing résumé setup instructions from the résumé page while retaining the public résumé experience and README deployment documentation.
+- The homepage project rotation pauses during pointer or keyboard interaction and does not auto-rotate when reduced motion is requested.
+
 ## 0.2.0 - 2026-08-14
 
 ### Added
