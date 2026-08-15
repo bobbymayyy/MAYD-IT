@@ -21,6 +21,33 @@ canvas {
   -webkit-user-select: none;
 }
 
+#pong,
+#snake {
+  height: auto;
+  max-height: none;
+  margin-inline: auto;
+}
+
+#pong {
+  width: min(100%, 116.667vh);
+  aspect-ratio: 5 / 3;
+}
+
+#snake {
+  width: min(100%, 105vh);
+  aspect-ratio: 3 / 2;
+}
+
+@supports (height: 100dvh) {
+  #pong {
+    width: min(100%, 116.667dvh);
+  }
+
+  #snake {
+    width: min(100%, 105dvh);
+  }
+}
+
 .ttt {
   grid-template-rows: repeat(3, minmax(0, 1fr));
 }
