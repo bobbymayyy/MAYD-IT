@@ -9,6 +9,14 @@ const log = document.querySelector<HTMLElement>('#signal-log');
 const restart = document.querySelector<HTMLButtonElement>('#signal-restart');
 
 const names = ['NORTH ARRAY', 'EAST ARRAY', 'SOUTH ARRAY', 'WEST ARRAY'];
+const BASE_PRESSURE = 1.3;
+const PRESSURE_VARIANCE = 3.2;
+const SPIKE_CHANCE = 0.18;
+const SPIKE_BASE = 5;
+const SPIKE_VARIANCE = 8;
+const HARDENING_MITIGATION = 1;
+const HARDENING_DECAY = 0.2;
+
 let load = [8, 12, 6, 10];
 let hardening = [0, 0, 0, 0];
 let selected = 0;
@@ -62,15 +70,15 @@ const tick = () => {
   if (!running) return;
 
   load = load.map((value, index) => {
-    const pressure = 2.2 + Math.random() * 5.5;
-    const mitigation = hardening[index] * 0.8;
-    hardening[index] = Math.max(0, hardening[index] - 0.25);
+    const pressure = BASE_PRESSURE + Math.random() * PRESSURE_VARIANCE;
+    const mitigation = hardening[index] * HARDENING_MITIGATION;
+    hardening[index] = Math.max(0, hardening[index] - HARDENING_DECAY);
     return Math.min(100, value + Math.max(0.5, pressure - mitigation));
   });
 
-  if (Math.random() > 0.72) {
+  if (Math.random() < SPIKE_CHANCE) {
     const spike = Math.floor(Math.random() * 4);
-    load[spike] = Math.min(100, load[spike] + 8 + Math.random() * 10);
+    load[spike] = Math.min(100, load[spike] + SPIKE_BASE + Math.random() * SPIKE_VARIANCE);
     writeLog(`${names[spike]} REPORTS ANOMALOUS BURST.`);
   }
 
@@ -107,19 +115,24 @@ actionButtons.forEach((button) => {
   button.addEventListener('click', () => {
     if (!running) return;
     const action = button.dataset.action;
+
     if (action === 'scan') {
-      score += 5;
       writeLog(`${names[selected]} LOAD CONFIRMED AT ${Math.round(load[selected])}%.`);
     } else if (action === 'intercept') {
-      const reduction = 13 + Math.random() * 11;
-      load[selected] = Math.max(0, load[selected] - reduction);
-      score += Math.round(reduction * 2);
-      writeLog(`${names[selected]} INTERCEPT SUCCESSFUL. LOAD REDUCED.`);
+      const before = load[selected];
+      const attemptedReduction = 13 + Math.random() * 11;
+      load[selected] = Math.max(0, before - attemptedReduction);
+      const actualReduction = before - load[selected];
+      score += Math.round(actualReduction * 2);
+      writeLog(actualReduction >= 1 ? `${names[selected]} INTERCEPT SUCCESSFUL. LOAD REDUCED.` : `${names[selected]} INTERCEPT FOUND NO MATERIAL LOAD.`);
     } else if (action === 'harden') {
-      hardening[selected] = Math.min(8, hardening[selected] + 4);
-      score += 10;
-      writeLog(`${names[selected]} HARDENING WINDOW ACTIVE.`);
+      const before = hardening[selected];
+      hardening[selected] = Math.min(8, before + 4);
+      const addedHardening = hardening[selected] - before;
+      score += Math.round(addedHardening * 2.5);
+      writeLog(addedHardening > 0 ? `${names[selected]} HARDENING WINDOW ACTIVE.` : `${names[selected]} HARDENING ALREADY AT MAXIMUM.`);
     }
+
     render();
   });
 });
