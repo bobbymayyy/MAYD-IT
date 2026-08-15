@@ -74,7 +74,7 @@ import { resume } from '../data/resume';
     );
     const pageSize = 3;
     let start = 0;
-    let intervalId;
+    let intervalId: number | undefined;
 
     const render = () => {
       cards.forEach((card, index) => {
