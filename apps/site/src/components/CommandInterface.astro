@@ -10,8 +10,8 @@ const arcadeBase = import.meta.env.PUBLIC_ARCADE_URL || 'https://play.mayyy.us';
       <button type="button" data-command-close aria-label="Close command interface">ESC</button>
     </div>
     <div class="terminal__history" data-command-history aria-live="polite">
-      <p><span class="muted">MAY'D IT command interface v0.2.0</span></p>
-      <p>Type <code>help</code> for commands. Try <code>play signal</code>.</p>
+      <p><span class="muted">MAY'D IT command interface v0.2.1</span></p>
+      <p>Type <code>help</code> for commands. Try <code>play fragment</code>.</p>
     </div>
     <form class="terminal__form" data-command-form autocomplete="off">
       <label for="command-input">maydit@web:~$</label>
@@ -61,6 +61,7 @@ const arcadeBase = import.meta.env.PUBLIC_ARCADE_URL || 'https://play.mayyy.us';
         'play pong       launch Pong',
         'play ttt        launch Tic-Tac-Toe',
         'play signal     launch SIGNAL',
+        'play fragment   launch FRAGMENT',
         'whoami          identity summary',
         'status          architecture status',
         'clear           clear terminal',
@@ -74,6 +75,7 @@ const arcadeBase = import.meta.env.PUBLIC_ARCADE_URL || 'https://play.mayyy.us';
       'play pong': () => navigate(`${arcadeBase}/games/pong`),
       'play ttt': () => navigate(`${arcadeBase}/games/tic-tac-toe`),
       'play signal': () => navigate(`${arcadeBase}/games/signal`),
+      'play fragment': () => navigate(`${arcadeBase}/games/fragment`),
       whoami: () => [
         'Nathan May',
         'systems · security · infrastructure · automation · software',
@@ -83,7 +85,7 @@ const arcadeBase = import.meta.env.PUBLIC_ARCADE_URL || 'https://play.mayyy.us';
         'database: none',
         'public admin: none',
         `arcade: isolated @ ${arcadeBase}`,
-        'release: 0.2.0',
+        'release: 0.2.1',
       ],
       clear: () => {
         history.replaceChildren();
