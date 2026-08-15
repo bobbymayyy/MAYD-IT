@@ -1,5 +1,6 @@
 ---
 import '../styles/arcade.css';
+import '../styles/interaction.css';
 const { title = "MAY'D IT ARCADE" } = Astro.props;
 const description = 'A tiny client-side arcade from MAY\'D IT. No account, backend, or persistent player state.';
 const canonical = new URL(Astro.url.pathname, 'https://play.mayyy.us');
@@ -8,7 +9,7 @@ const canonical = new URL(Astro.url.pathname, 'https://play.mayyy.us');
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#020702" />
     <meta name="description" content={description} />
     <meta name="robots" content="index,follow" />
