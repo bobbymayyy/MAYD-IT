@@ -55,8 +55,13 @@
 
 .case-study__footer .tag-row { margin-top: 0; }
 
-.resume-dropzone h2 { margin: .8rem 0 1rem; }
-.resume-dropzone p { max-width: 800px; color: var(--muted); line-height: 1.7; }
+.featured-projects:not(.featured-projects--enhanced) .featured-project:nth-child(n + 4) {
+  display: none;
+}
+
+.featured-project .project-card {
+  height: 100%;
+}
 
 .terminal__keys {
   color: #667066;
