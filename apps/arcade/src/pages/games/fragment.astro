@@ -1,0 +1,45 @@
+---
+import ArcadeLayout from '../../layouts/ArcadeLayout.astro';
+---
+<ArcadeLayout title="Fragment · MAY'D IT ARCADE">
+  <section class="arcade-shell game-page fragment-page">
+    <a class="back" href="/">← SELECT GAME</a>
+    <div class="game-heading">
+      <div><p class="prompt">PROGRAM 05</p><h1>FRAGMENT</h1></div>
+      <div class="scoreboard">NO MAP // NO MEMORY</div>
+    </div>
+    <canvas id="fragment" width="480" height="270" aria-label="Fragment procedural first-person arcade game"></canvas>
+    <p class="subtle">MOVE: WASD · TURN: MOUSE / ← → / Q E · FIRE: CLICK / SPACE · TOUCH: LEFT DRAG MOVE · RIGHT DRAG LOOK · RIGHT TAP FIRE</p>
+    <p class="subtle fragment-note">THE WORLD IS GENERATED ONLY AHEAD OF YOUR TRAVEL FRONTIER. TURN BACK AND IT COLLAPSES INTO ASCII FRAGMENTS.</p>
+  </section>
+  <script src="../../scripts/fragment.ts"></script>
+</ArcadeLayout>
+
+<style>
+  .fragment-page { max-width: 1100px; }
+  #fragment {
+    width: 100%;
+    height: auto;
+    max-height: none;
+    aspect-ratio: 16 / 9;
+    margin-inline: auto;
+    image-rendering: pixelated;
+    cursor: crosshair;
+  }
+  .fragment-note {
+    margin-top: .55rem;
+    font-size: .78rem;
+    letter-spacing: .035em;
+  }
+  @media (orientation: landscape) and (max-height: 700px) {
+    .fragment-page { padding-top: 1.25rem; }
+    .fragment-page .game-heading { margin-top: 1.25rem; }
+    .fragment-page .game-heading h1 { font-size: clamp(2.25rem, 8vh, 4.5rem); }
+    #fragment { width: min(100%, 150vh); }
+  }
+  @supports (height: 100dvh) {
+    @media (orientation: landscape) and (max-height: 700px) {
+      #fragment { width: min(100%, 150dvh); }
+    }
+  }
+</style>
