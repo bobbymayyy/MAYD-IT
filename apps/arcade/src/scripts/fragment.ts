@@ -13,9 +13,29 @@ const MAX_DEPTH = 18;
 const RAY_STEP = 2;
 const MOVE_SPEED = 2.75;
 const TURN_SPEED = 2.15;
+const MOUSE_SENSITIVITY = 0.0026;
+const PLAYER_RADIUS = 0.18;
+const ANOMALY_MIN_DISTANCE = 1.4;
+const ANOMALY_MAX_DISTANCE = 12.5;
+const ANOMALY_SCAN_RADIUS = 14;
+const ANOMALY_DENSITY = 0.045;
 const GLYPHS = '01<>/\\[]{};:+-*#%@';
+const GAME_KEYS = new Set([
+  'Space',
+  'ArrowUp',
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+  'KeyW',
+  'KeyA',
+  'KeyS',
+  'KeyD',
+  'KeyQ',
+  'KeyE',
+]);
 
 const keys = new Set<string>();
+const clearedAnomalies = new Set<string>();
 let px = 0.5;
 let py = 0.5;
 let angle = 0;
@@ -25,6 +45,7 @@ let hits = 0;
 let shots = 0;
 let shotFlash = 0;
 let impactFlash = 0;
+let mouseTurn = 0;
 let lastTime = performance.now();
 
 interface TouchControl {
@@ -57,15 +78,48 @@ const hash = (x: number, y: number, salt = 0) => {
 };
 
 const isSolid = (x: number, y: number) => {
+  // Keep the spawn cell open so collision starts from valid geometry.
+  if (x === 0 && y === 0) return false;
   const h = hash(x, y, 17);
   const rib = Math.abs((x * 3 + y * 5) % 13);
   return h < 0.235 || (rib === 0 && h < 0.56);
+};
+
+const isResolvedCell = (cellX: number, cellY: number) => {
+  if (cellX === Math.floor(px) && cellY === Math.floor(py)) return false;
+  const dx = cellX + 0.5 - px;
+  const dy = cellY + 0.5 - py;
+  const length = Math.hypot(dx, dy);
+  if (length < 0.001) return false;
+  const frontierDot = (dx * Math.cos(frontierAngle) + dy * Math.sin(frontierAngle)) / length;
+  return frontierDot >= 0.08;
+};
+
+const canOccupy = (x: number, y: number) => {
+  const samples = [
+    [-PLAYER_RADIUS, -PLAYER_RADIUS],
+    [0, -PLAYER_RADIUS],
+    [PLAYER_RADIUS, -PLAYER_RADIUS],
+    [-PLAYER_RADIUS, 0],
+    [PLAYER_RADIUS, 0],
+    [-PLAYER_RADIUS, PLAYER_RADIUS],
+    [0, PLAYER_RADIUS],
+    [PLAYER_RADIUS, PLAYER_RADIUS],
+  ] as const;
+
+  for (const [ox, oy] of samples) {
+    const cellX = Math.floor(x + ox);
+    const cellY = Math.floor(y + oy);
+    if (isResolvedCell(cellX, cellY) && isSolid(cellX, cellY)) return false;
+  }
+  return true;
 };
 
 interface RayHit {
   distance: number;
   side: number;
   visible: boolean;
+  hit: boolean;
 }
 
 function castRay(rayAngle: number): RayHit {
@@ -73,7 +127,7 @@ function castRay(rayAngle: number): RayHit {
   const dy = Math.sin(rayAngle);
   const frontierDot = dx * Math.cos(frontierAngle) + dy * Math.sin(frontierAngle);
 
-  if (frontierDot < 0.08) return { distance: MAX_DEPTH, side: 0, visible: false };
+  if (frontierDot < 0.08) return { distance: MAX_DEPTH, side: 0, visible: false, hit: false };
 
   let mapX = Math.floor(px);
   let mapY = Math.floor(py);
@@ -85,8 +139,9 @@ function castRay(rayAngle: number): RayHit {
   let sideY = dy < 0 ? (py - mapY) * deltaY : (mapY + 1 - py) * deltaY;
   let side = 0;
   let distance = MAX_DEPTH;
+  let didHit = false;
 
-  for (let i = 0; i < 32; i += 1) {
+  for (let i = 0; i < 40; i += 1) {
     if (sideX < sideY) {
       sideX += deltaX;
       mapX += stepX;
@@ -105,12 +160,17 @@ function castRay(rayAngle: number): RayHit {
       distance = side === 0
         ? (mapX - px + (1 - stepX) / 2) / dx
         : (mapY - py + (1 - stepY) / 2) / dy;
+      didHit = true;
       break;
     }
   }
 
-  distance *= Math.cos(rayAngle - angle);
-  return { distance: Math.max(0.1, Math.min(MAX_DEPTH, distance)), side, visible: true };
+  return {
+    distance: Math.max(0.1, Math.min(MAX_DEPTH, distance)),
+    side,
+    visible: true,
+    hit: didHit,
+  };
 }
 
 function renderFragments(time: number) {
@@ -134,17 +194,26 @@ function renderFragments(time: number) {
 }
 
 function renderWorld() {
+  const depthBuffer = new Float32Array(WIDTH);
+  depthBuffer.fill(MAX_DEPTH + 1);
+
   for (let sx = 0; sx < WIDTH; sx += RAY_STEP) {
     const camera = sx / WIDTH - 0.5;
     const rayAngle = angle + camera * FOV;
     const hit = castRay(rayAngle);
     if (!hit.visible) continue;
 
-    const distance = hit.distance;
-    const wallHeight = Math.min(HEIGHT * 1.45, HEIGHT / distance * 1.12);
+    if (hit.hit) {
+      for (let offset = 0; offset < RAY_STEP && sx + offset < WIDTH; offset += 1) {
+        depthBuffer[sx + offset] = hit.distance;
+      }
+    }
+
+    const projectedDistance = Math.max(0.1, hit.distance * Math.cos(rayAngle - angle));
+    const wallHeight = Math.min(HEIGHT * 1.45, HEIGHT / projectedDistance * 1.12);
     const top = Math.floor(HALF_HEIGHT - wallHeight / 2);
     const bottom = Math.ceil(HALF_HEIGHT + wallHeight / 2);
-    const depth = 1 - Math.min(1, distance / MAX_DEPTH);
+    const depth = 1 - Math.min(1, hit.distance / MAX_DEPTH);
     const sideShade = hit.side ? 0.72 : 1;
     const alpha = Math.max(0.08, depth * 0.72 * sideShade);
 
@@ -164,38 +233,61 @@ function renderWorld() {
     ctx.fillStyle = `rgba(124,255,114,${floorAlpha.toFixed(3)})`;
     ctx.fillRect(sx, HALF_HEIGHT, RAY_STEP, 1);
   }
+
+  return depthBuffer;
 }
 
 interface Anomaly {
+  id: string;
   screenX: number;
   size: number;
   distance: number;
 }
 
 function anomalies(): Anomaly[] {
-  const seed = Math.floor(travelled * 0.55);
   const result: Anomaly[] = [];
+  const centerX = Math.floor(px);
+  const centerY = Math.floor(py);
 
-  for (let i = 0; i < 5; i += 1) {
-    const offset = (hash(seed, i, 301) - 0.5) * 1.35;
-    const anomalyAngle = frontierAngle + offset;
-    const distance = 2.8 + hash(seed, i, 777) * 9.5;
-    const relative = normalizeAngle(anomalyAngle - angle);
-    if (Math.abs(relative) > FOV * 0.55) continue;
-    if (Math.cos(anomalyAngle - frontierAngle) < 0.08) continue;
+  for (let cellY = centerY - ANOMALY_SCAN_RADIUS; cellY <= centerY + ANOMALY_SCAN_RADIUS; cellY += 1) {
+    for (let cellX = centerX - ANOMALY_SCAN_RADIUS; cellX <= centerX + ANOMALY_SCAN_RADIUS; cellX += 1) {
+      const id = `${cellX}:${cellY}`;
+      if (clearedAnomalies.has(id) || isSolid(cellX, cellY) || hash(cellX, cellY, 301) >= ANOMALY_DENSITY) continue;
 
-    const wall = castRay(anomalyAngle);
-    if (wall.visible && wall.distance < distance) continue;
+      const anomalyX = cellX + 0.2 + hash(cellX, cellY, 777) * 0.6;
+      const anomalyY = cellY + 0.2 + hash(cellX, cellY, 778) * 0.6;
+      const dx = anomalyX - px;
+      const dy = anomalyY - py;
+      const distance = Math.hypot(dx, dy);
+      if (distance < ANOMALY_MIN_DISTANCE || distance > ANOMALY_MAX_DISTANCE) continue;
 
-    const screenX = WIDTH * (0.5 + relative / FOV);
-    const size = Math.max(7, Math.min(42, 92 / distance));
-    result.push({ screenX, size, distance });
+      const anomalyAngle = Math.atan2(dy, dx);
+      const relative = normalizeAngle(anomalyAngle - angle);
+      if (Math.abs(relative) > FOV * 0.55) continue;
+      if (Math.cos(anomalyAngle - frontierAngle) < 0.08) continue;
+
+      // Raw ray distance is compared against raw target distance so walls truly occlude ERRs.
+      const wall = castRay(anomalyAngle);
+      if (!wall.visible || (wall.hit && wall.distance < distance - 0.08)) continue;
+
+      const screenX = WIDTH * (0.5 + relative / FOV);
+      const size = Math.max(7, Math.min(42, 92 / distance));
+      result.push({ id, screenX, size, distance });
+    }
   }
 
   return result;
 }
 
-function renderAnomalies(time: number) {
+function drawAnomaly(anomaly: Anomaly, y: number, pulse: number) {
+  ctx.font = `700 ${Math.round(anomaly.size)}px ui-monospace, monospace`;
+  ctx.fillStyle = `rgba(223,255,119,${pulse.toFixed(3)})`;
+  ctx.fillText('◇', anomaly.screenX, y);
+  ctx.font = `${Math.max(6, Math.round(anomaly.size * 0.26))}px ui-monospace, monospace`;
+  ctx.fillText('ERR', anomaly.screenX, y + anomaly.size * 0.62);
+}
+
+function renderAnomalies(time: number, depthBuffer: Float32Array) {
   const pulse = 0.78 + Math.sin(time / 130) * 0.18;
   const current = anomalies().sort((a, b) => b.distance - a.distance);
 
@@ -203,11 +295,23 @@ function renderAnomalies(time: number) {
   ctx.textBaseline = 'middle';
   for (const anomaly of current) {
     const y = HALF_HEIGHT + Math.sin(time / 250 + anomaly.distance) * 4;
-    ctx.font = `700 ${Math.round(anomaly.size)}px ui-monospace, monospace`;
-    ctx.fillStyle = `rgba(223,255,119,${pulse.toFixed(3)})`;
-    ctx.fillText('◇', anomaly.screenX, y);
-    ctx.font = `${Math.max(6, Math.round(anomaly.size * 0.26))}px ui-monospace, monospace`;
-    ctx.fillText('ERR', anomaly.screenX, y + anomaly.size * 0.62);
+    const left = Math.max(0, Math.floor(anomaly.screenX - anomaly.size * 0.7));
+    const right = Math.min(WIDTH - 1, Math.ceil(anomaly.screenX + anomaly.size * 0.7));
+    let runStart = -1;
+
+    for (let x = left; x <= right + 1; x += 1) {
+      const visible = x <= right && anomaly.distance < depthBuffer[x] - 0.04;
+      if (visible && runStart < 0) runStart = x;
+      if ((!visible || x > right) && runStart >= 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(runStart, 0, x - runStart, HEIGHT);
+        ctx.clip();
+        drawAnomaly(anomaly, y, pulse);
+        ctx.restore();
+        runStart = -1;
+      }
+    }
   }
   ctx.textAlign = 'start';
   ctx.textBaseline = 'alphabetic';
@@ -275,8 +379,8 @@ function renderHud() {
 
 function render(time: number) {
   renderFragments(time);
-  renderWorld();
-  renderAnomalies(time);
+  const depthBuffer = renderWorld();
+  renderAnomalies(time, depthBuffer);
   renderWeapon();
   renderHud();
 }
@@ -286,14 +390,15 @@ function fire() {
   shotFlash = 1;
 
   const targets = anomalies();
-  let best = Infinity;
+  let best: Anomaly | null = null;
   for (const target of targets) {
     const aimError = Math.abs(target.screenX - WIDTH / 2);
     const hitRadius = Math.max(7, target.size * 0.52);
-    if (aimError < hitRadius && target.distance < best) best = target.distance;
+    if (aimError < hitRadius && (!best || target.distance < best.distance)) best = target;
   }
 
-  if (best < Infinity) {
+  if (best) {
+    clearedAnomalies.add(best.id);
     hits += 1;
     impactFlash = 1;
     if ('vibrate' in navigator) navigator.vibrate(12);
@@ -301,6 +406,10 @@ function fire() {
 }
 
 function update(dt: number) {
+  // Mouse delta is accumulated independently so keyboard movement/fire never suppresses look input.
+  angle += mouseTurn * MOUSE_SENSITIVITY;
+  mouseTurn = 0;
+
   const turn = (keys.has('ArrowRight') || keys.has('KeyE') ? 1 : 0) - (keys.has('ArrowLeft') || keys.has('KeyQ') ? 1 : 0);
   angle += turn * TURN_SPEED * dt;
 
@@ -323,13 +432,23 @@ function update(dt: number) {
 
     const moveX = Math.cos(angle) * forward + Math.cos(angle + Math.PI / 2) * strafe;
     const moveY = Math.sin(angle) * forward + Math.sin(angle + Math.PI / 2) * strafe;
-    const distance = MOVE_SPEED * dt * Math.hypot(moveX, moveY);
-    px += moveX * MOVE_SPEED * dt;
-    py += moveY * MOVE_SPEED * dt;
-    travelled += distance;
+    const stepX = moveX * MOVE_SPEED * dt;
+    const stepY = moveY * MOVE_SPEED * dt;
+    const oldX = px;
+    const oldY = py;
 
-    const movementAngle = Math.atan2(moveY, moveX);
-    frontierAngle = lerpAngle(frontierAngle, movementAngle, dt * 2.35);
+    // Resolve axes separately so contact with a wall naturally slides along it.
+    if (canOccupy(px + stepX, py)) px += stepX;
+    if (canOccupy(px, py + stepY)) py += stepY;
+
+    const actualX = px - oldX;
+    const actualY = py - oldY;
+    const distance = Math.hypot(actualX, actualY);
+    if (distance > 0.0001) {
+      travelled += distance;
+      const movementAngle = Math.atan2(actualY, actualX);
+      frontierAngle = lerpAngle(frontierAngle, movementAngle, dt * 2.35);
+    }
   }
 
   shotFlash = Math.max(0, shotFlash - dt * 8.5);
@@ -344,16 +463,33 @@ function frame(time: number) {
   requestAnimationFrame(frame);
 }
 
-document.addEventListener('keydown', (event) => {
-  if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.code)) event.preventDefault();
+canvas.tabIndex = 0;
+
+window.addEventListener('keydown', (event) => {
+  if (GAME_KEYS.has(event.code)) event.preventDefault();
   if (event.code === 'Space' && !event.repeat) fire();
   keys.add(event.code);
+}, { capture: true });
+
+window.addEventListener('keyup', (event) => {
+  keys.delete(event.code);
+}, { capture: true });
+
+window.addEventListener('blur', () => {
+  keys.clear();
+  mouseTurn = 0;
 });
 
-document.addEventListener('keyup', (event) => keys.delete(event.code));
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) keys.clear();
+});
 
-document.addEventListener('mousemove', (event) => {
-  if (document.pointerLockElement === canvas) angle += event.movementX * 0.0026;
+window.addEventListener('mousemove', (event) => {
+  if (document.pointerLockElement === canvas) mouseTurn += event.movementX;
+}, { capture: true });
+
+document.addEventListener('pointerlockchange', () => {
+  if (document.pointerLockElement !== canvas) mouseTurn = 0;
 });
 
 canvas.addEventListener('pointerdown', (event) => {
@@ -362,6 +498,8 @@ canvas.addEventListener('pointerdown', (event) => {
   const y = event.clientY - rect.top;
 
   if (event.pointerType === 'mouse') {
+    event.preventDefault();
+    canvas.focus({ preventScroll: true });
     if (document.pointerLockElement === canvas) fire();
     else void canvas.requestPointerLock();
     return;
