@@ -4,7 +4,7 @@ export const resume = {
   summary:
     'Systems-focused engineer with 10+ years across infrastructure, cyber operations, architecture, resilience, automation, research, and technical leadership.',
   publicPdf: true,
-  publicPdfPath: '/resume.pdf',
+  publicPdfPath: '/Nathan-May-Resume.pdf',
   focus: [
     'Systems architecture',
     'Cyber operations and security engineering',
