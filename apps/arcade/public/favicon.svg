@@ -17,14 +17,6 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:dc="http://purl.org/dc/elements/1.1/">
-  <style>
-    @media (prefers-color-scheme: dark) {
-      * {
-        fill: white;
-        stroke: white;
-      }
-    }
-  </style>
   <defs
      id="defs1" />
   <sodipodi:namedview
@@ -50,8 +42,7 @@
   <!-- Custom M -->
   <path
      id="m"
-     fill="#000"
-     d="M2 26V6h4l4.5 6L15 6h4v20h-4V12l-4.5 6L6 12v14H2Z" />
+     d="M 2 6 L 2 26 L 6 26 L 6 12 L 10.5 18 L 15 12 L 15 26 L 19 26 L 19 6 L 15 6 L 10.5 12 L 6 6 L 2 6 z M 19.832031 10.242188 L 19.832031 22.228516 L 29.421875 15.037109 L 19.832031 10.242188 z " />
   <!-- Lowercase i rotated 90 degrees clockwise -->
   <metadata
      id="metadata1">
@@ -62,9 +53,4 @@
       </cc:Work>
     </rdf:RDF>
   </metadata>
-  <path
-     style="fill:#000000"
-     d="m 19.832009,10.242906 v 11.986379 l 9.589103,-7.191828 z"
-     id="path1"
-     inkscape:label="triangle" />
 </svg>
