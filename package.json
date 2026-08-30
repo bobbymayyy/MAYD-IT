@@ -21,7 +21,7 @@
     "verify": "npm run build && node scripts/verify-build.mjs"
   },
   "engines": {
-    "node": "24.19.0",
-    "npm": "11.17.0"
+    "node": ">=24.19.0 <25",
+    "npm": ">=11.17.0 <12"
   }
 }
