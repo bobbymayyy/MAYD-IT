@@ -2,12 +2,19 @@ import fs from 'node:fs';
 import process from 'node:process';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
-const expectedNode = `v${pkg.engines.node}`;
-const expectedNpm = pkg.engines.npm;
+const expectedNode = fs.readFileSync(new URL('../.nvmrc', import.meta.url), 'utf8').trim();
+const packageManagerMatch = /^npm@(.+)$/.exec(pkg.packageManager ?? '');
+
+if (!packageManagerMatch) {
+  console.error('packageManager must pin npm as npm@<version>');
+  process.exit(1);
+}
+
+const expectedNpm = packageManagerMatch[1];
 const actualNode = process.version;
 
-if (actualNode !== expectedNode) {
-  console.error(`Node mismatch: expected ${expectedNode}, got ${actualNode}`);
+if (actualNode !== `v${expectedNode}`) {
+  console.error(`Node mismatch: expected v${expectedNode}, got ${actualNode}`);
   process.exit(1);
 }
 
